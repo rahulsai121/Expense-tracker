@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+</head>
+<body>
+    
+<form onsubmit="handleFormSubmit(event)" method='post'>
+
+    <label for="number">Choose expenseamount :</label>
+    <input type="number" id="number" name="number">
+
+    <label for="description">Choose description :</label>
+    <input type="text" id="description" name="description">
+
+    <label for="category">Choose a category :</label>
+    <select id="category">
+        <option value="food">Food</option>
+        <option value="movie">Movie</option>
+        <option value="fuel">Fuel</option>
+    </select>
+
+    <button type="submit">Add Expense</button>
+</form>
+
+<ul>
+    
+</ul>
+
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+
+<script>
+    function handleFormSubmit(event)
+    {
+        
+        event.preventDefault();
+
+
+        let number=event.target.number.value;
+        let description=event.target.description.value;
+        let category=event.target.category.value;
+
+
+        let newValue=
+        {
+            amount:number,
+            description:description,
+            category:category
+
+        }
+        axios.post('http://localhost:3000/expense/add-expense',newValue)
+        .then(res=>{
+            console.log(res)
+            showonscreen(res.data.expence)})
+        .catch(err=>console.log(err))
+        
+    }
+    window.addEventListener('DOMContentLoaded',()=>{
+        axios.get('http://localhost:3000/expense/expenses')
+        .then(res=>{
+            for(let i=0;i<res.data.allExpences.length;i++){
+            showonscreen(res.data.allExpences[i])
+            }
+        })
+        .catch(err=>console.log(err))
+    })
+
+    function showonscreen(x){
+        const ul=document.querySelector('ul');
+        const li=document.createElement('li');
+        li.id=x.id
+        //console.log(x.id)
+        const litext=document.createTextNode(`${x.amount}-${x.description}-${x.category}`)
+
+        const delbutton=document.createElement('button')
+        delbutton.textContent='Delete'
+
+        delbutton.onclick=()=>deleteFunction(`${x.id}`)
+        
+        const editbutton=document.createElement('button')
+        editbutton.textContent='Edit'
+
+        li.appendChild(litext)
+        li.appendChild(delbutton)
+        li.appendChild(editbutton)
+        ul.appendChild(li)
+
+
+    }
+
+    function deleteFunction(x){
+        axios.delete(`http://localhost:3000/expense/delete-expense/${x}`)
+        .then(deletetext(x))
+        .catch(err=>console.log(err))
+    }
+    function deletetext(x){
+        const ul=document.querySelector('ul')
+        const li=document.getElementById(`${x}`)
+        ul.removeChild(li)
+    }
+</script>
+
+<script src="app.js"></script>
+
+</body>
+</html>
